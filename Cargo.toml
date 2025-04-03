@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = "1.0.97"
+tokio = { version = "1.44.1", features = ["full"] }
+tower-lsp = "0.20.0"
