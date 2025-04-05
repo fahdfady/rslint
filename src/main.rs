@@ -35,6 +35,43 @@ impl Backend {
 
         // todo: activate linter and show diagnostics
     }
+
+    fn get_lint_rules(&self) -> Vec<LintRule> {
+        vec![LintRule {
+            name: "no-var".to_string(),
+            message: "Use 'let' or 'const' instead of 'var'".to_string(),
+            severity: DiagnosticSeverity::Warning,
+        }]
+    }
+
+    async fn lint(&self, content: &str) -> Vec<Diagnostic> {
+        let mut diagnostics: Vec<Diagnostic> = Vec::new();
+
+        for (line_idx, line) in content.lines().enumerate() {
+            if line.contains("var ") {
+                let start_char = line.find("var ").unwrap_or(0) as u32;
+
+                diagnostics.push(Diagnostic {
+                    range: Range {
+                        start: Position {
+                            line: line_idx as u32,
+                            character: start_char,
+                        },
+                        end: Position {
+                            line: line_idx as u32,
+                            character: start_char + 3,
+                        },
+                    },
+                    severity: Some(tower_lsp::lsp_types::DiagnosticSeverity::WARNING),
+                    message: "Use 'let' or 'const' instead of 'var'".to_string(),
+                    source: Some("js-linter".to_string()),
+                    ..Default::default()
+                });
+            }
+        }
+
+        diagnostics
+    }
 }
 
 #[tower_lsp::async_trait]
