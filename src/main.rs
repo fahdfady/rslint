@@ -32,8 +32,19 @@ impl Backend {
 
     async fn analyze_document(&self, uri: &str) {
         let documents = self.document_map.lock().await;
+        let diagnostics = if let Some(content) = documents.get(uri) {
+            self.lint(content).await
+        } else {
+            Vec::new()
+        };
 
-        // todo: activate linter and show diagnostics
+        // Convert URI string back to URI
+        let uri = Url::parse(uri).unwrap();
+
+        // Publish diagnostics
+        self.client
+            .publish_diagnostics(uri, diagnostics, None)
+            .await;
     }
 
     fn get_lint_rules(&self) -> Vec<LintRule> {
